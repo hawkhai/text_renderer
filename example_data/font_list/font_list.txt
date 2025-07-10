@@ -1,3 +1,17 @@
+arial_bold.ttf
+arial_regular.ttf
+calibri_bold.ttf
+calibri_regular.ttf
+comic_sans_ms_bold.ttf
+comic_sans_ms_regular.ttf
+consolas_bold.ttf
+consolas_regular.ttf
+courier_new_bold.ttf
+courier_new_regular.ttf
+segoe_script_bold.ttf
+segoe_script_regular.ttf
+times_new_roman_bold.ttf
+times_new_roman_regular.ttf
 仿宋_regular.ttf
 华文行楷_regular.ttf
 宋体_常规.ttf

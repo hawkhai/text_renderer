@@ -38,7 +38,7 @@ def convert_font_name_to_pinyin(font_name):
     
     return result if result else 'unknown_font'
 
-HORIZONTAL = False
+HORIZONTAL = True
 CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
 OUT_DIR = CURRENT_DIR / "output" / ("horizontal" if HORIZONTAL else "vertical")
 DATA_DIR = CURRENT_DIR
