@@ -281,7 +281,7 @@ def create_vertical_configs_by_font():
             'effects': Effects([
                 OneOf([
                     DropoutRand(dropout_p=(0.1, 0.3)),
-                    DropoutVertical(num_line=(1, 3)),
+                    DropoutVertical(num_line=2),
                     Line(0.3, thickness=(1, 3)),
                     NoEffects()
                 ]),
@@ -296,7 +296,7 @@ def create_vertical_configs_by_font():
                 Padding(p=0.5, w_ratio=[0.15, 0.25], h_ratio=[0.2, 0.4], center=True),
                 OneOf([
                     [Line(0.6, color_cfg=FixedTextColorCfg(), thickness=(2, 4)), DropoutRand()],
-                    DropoutVertical(num_line=(2, 5), thickness=(2, 3)),
+                    DropoutVertical(num_line=3, thickness=2),
                     ImgAugEffect(aug=iaa.Emboss(alpha=(0.5, 0.8), strength=(0.8, 1.2))),
                     NoEffects()
                 ]),
