@@ -1,5 +1,5 @@
 import inspect
-import os
+import os, sys
 from pathlib import Path
 import imgaug.augmenters as iaa
 from pypinyin import pinyin, Style
@@ -38,9 +38,9 @@ def convert_font_name_to_pinyin(font_name):
     
     return result if result else 'unknown_font'
 
-
+HORIZONTAL = False
 CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
-OUT_DIR = CURRENT_DIR / "output"
+OUT_DIR = CURRENT_DIR / "output" / ("horizontal" if HORIZONTAL else "vertical")
 DATA_DIR = CURRENT_DIR
 BG_DIR = DATA_DIR / "bg"
 CHAR_DIR = DATA_DIR / "char"
@@ -373,7 +373,7 @@ def create_vertical_configs_by_font():
                                 chars_file=corpus_info['chars_file'],
                                 length=style_info['length'],
                                 char_spacing=style_info['char_spacing'],
-                                horizontal=False,  # Vertical text
+                                horizontal=HORIZONTAL,  # Vertical text
                                 font_dir=FONT_DIR,
                                 font_list_file=single_font_file,  # Use specific font
                                 font_size=style_info['font_size'],
