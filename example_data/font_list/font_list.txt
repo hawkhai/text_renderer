@@ -1,1 +1,14 @@
+仿宋_regular.ttf
+华文行楷_regular.ttf
 宋体_常规.ttf
+微软雅黑_bold.ttf
+微软雅黑_regular.ttf
+思源宋体_cn_regular.ttf
+思源黑体_cn_regular.ttf
+新宋体_常规.ttf
+方正小标宋_gbk_regular.ttf
+方正舒体_gbk_regular.ttf
+方正行楷_gbk_regular.ttf
+楷体_regular.ttf
+隶书_regular.ttf
+黑体_regular.ttf

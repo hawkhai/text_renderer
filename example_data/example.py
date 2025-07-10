@@ -275,7 +275,7 @@ def create_vertical_configs_by_font():
     # Style configurations
     style_configs = {
         'basic': {
-            'length': (4, 8),
+            'length': (3, 20),
             'char_spacing': (0.05, 0.25),
             'font_size': (30, 31),
             'effects': Effects([
@@ -285,7 +285,7 @@ def create_vertical_configs_by_font():
             'gray': True
         },
         'long': {
-            'length': (8, 15),
+            'length': (3, 20),
             'char_spacing': (0.1, 0.4),
             'font_size': (25, 35),
             'effects': Effects([
@@ -299,7 +299,7 @@ def create_vertical_configs_by_font():
             'gray': True
         },
         'compact': {
-            'length': (5, 12),
+            'length': (3, 20),
             'char_spacing': (-0.1, 0.1),
             'font_size': (28, 32),
             'effects': Effects([
@@ -313,7 +313,7 @@ def create_vertical_configs_by_font():
             'gray': True
         },
         'stylized': {
-            'length': (6, 10),
+            'length': (3, 20),
             'char_spacing': (0.2, 0.5),
             'font_size': (32, 40),
             'effects': Effects([
