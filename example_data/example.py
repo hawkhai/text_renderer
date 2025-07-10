@@ -1,5 +1,6 @@
 import inspect
 import os
+import tempfile
 from pathlib import Path
 import imgaug.augmenters as iaa
 
@@ -317,6 +318,11 @@ def create_vertical_configs_by_font():
                 # Create configuration name: font/corpus/style
                 cfg_name = f"{font_name_clean}/{corpus_info['name']}/{style_key}"
                 
+                # Create temporary font list file for this specific font
+                temp_font_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8')
+                temp_font_file.write(font_name)
+                temp_font_file.close()
+                
                 cfg = GeneratorCfg(
                     num_image=images_per_config,
                     save_dir=OUT_DIR / cfg_name,
@@ -333,6 +339,7 @@ def create_vertical_configs_by_font():
                                 char_spacing=style_info['char_spacing'],
                                 horizontal=False,  # Vertical text
                                 font_dir=FONT_DIR,
+                                font_list_file=Path(temp_font_file.name),  # Use specific font
                                 font_size=style_info['font_size'],
                             ),
                         ),
