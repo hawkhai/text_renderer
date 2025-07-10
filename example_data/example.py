@@ -200,6 +200,32 @@ def imgaug_emboss_example():
     )
 
 
+def vertical_text_data():
+    """
+    Generate vertical text samples - characters are arranged vertically
+    """
+    return base_cfg(
+        inspect.currentframe().f_code.co_name,
+        corpus=CharCorpus(
+            CharCorpusCfg(
+                text_paths=[TEXT_DIR / "chn_text.txt", TEXT_DIR / "eng_text.txt"],
+                filter_by_chars=True,
+                chars_file=CHAR_DIR / "chn.txt",
+                length=(5, 10),
+                char_spacing=(0.1, 0.3),  # Adjust spacing for vertical text
+                horizontal=False,  # This is the key setting for vertical text
+                **font_cfg
+            ),
+        ),
+        corpus_effects=Effects(
+            [
+                Line(0.3, color_cfg=FixedTextColorCfg()),
+                OneOf([DropoutRand(), DropoutVertical()]),
+            ]
+        ),
+    )
+
+
 # fmt: off
 # The configuration file must have a configs variable
 configs = [
@@ -209,6 +235,7 @@ configs = [
     eng_word_data(),
     same_line_data(),
     extra_text_line_data(),
-    imgaug_emboss_example()
+    imgaug_emboss_example(),
+    vertical_text_data()  # Add vertical text samples
 ]
 # fmt: on
