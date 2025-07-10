@@ -1,1 +1,2 @@
 simsun.ttf
+arial.ttf
