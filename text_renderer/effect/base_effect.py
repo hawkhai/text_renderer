@@ -88,6 +88,10 @@ class NoEffects:
     Placeholder when you don't want to apply effects for multi corpus
     """
 
+    def __call__(self, img: PILImage, text_bbox: BBox) -> Tuple[PILImage, BBox]:
+        """Make NoEffects callable to be compatible with OneOf selector"""
+        return img, text_bbox
+
     def apply_effects(self, img: PILImage, bbox: BBox) -> Tuple[PILImage, BBox]:
         return img, bbox
 
