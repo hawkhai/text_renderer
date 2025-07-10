@@ -307,7 +307,7 @@ def create_vertical_configs_by_font():
     
     # Calculate images per configuration
     total_configs = len(font_names) * len(corpus_configs) * len(style_configs)
-    images_per_config = 10000 // total_configs
+    images_per_config = 1000 // total_configs
     
     for font_name in font_names:
         font_name_clean = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')

@@ -1,3 +1,33 @@
 Seconds before Earth is demolished to make way for a galactic freeway, Arthur Dent is plucked off the planet by his friend Ford Prefect, a researcher for the revised edition of The Hitchhiker's Guide to the Galaxy who, for the last fifteen years, has been posing as an out-of-work actor.
 Together, this dynamic pair began a journey through space aided by a galaxyful of fellow travelers: Zaphod Beeblebrox, the two-headed, three-armed, ex-hippie and totally out-to-lunch president of the galaxy; Trillian (formerly Tricia McMillan), Zaphod's girlfriend, whom Arthur tried to pick up at a cocktail party once upon a time zone; Marvin, a paranoid, brilliant, and chronically depressed robot; and Veet Voojagig, a former graduate student obsessed with the disappearance of all the ballpoint pens he's bought over the years.
 Where are these pens? Why are we born? Why do we die? For all the answers, stick your thumb to the stars!
+Please keep this document for your records.
+Limited time offer, while supplies last.
+Subject to change without prior notice.
+Scan this QR code to access your account.
+Document generated automatically. Do not reply.
+Enter your username and password to continue.
+For office use only. Not to be distributed.
+Packing List: Verify contents upon receipt.
+Signature required at the time of delivery.
+This is a computer-generated invoice.
+Every good boy deserves fudge.
+Pack my box with five dozen liquor jugs.
+Jackdaws love my big sphinx of quartz.
+The five boxing wizards jump quickly.
+Glib jocks quiz nymph to vex dwarf.
+Visit us at: https://www.ocr-sample.com/try
+Contact: support@example.org
+Deadline: December 31st, 2025
+Reference ID: RFE-993812-BX
+Latitude: 37.7749° N, Longitude: 122.4194° W
+0O1lI — easily confused OCR characters.
+lIlIlIlI — alternating uppercase 'i' and lowercase 'L'.
+AAAAAaaaaa11111!!!!!$$$$$%%%%%^^^^^
+The price is $49.99 (USD), tax included.
+CTRL + ALT + DEL to restart your computer.
+$ pip install ocr-utils
+>>> print('OCR test passed!')
+404 NOT FOUND: The requested URL was not found on this server.
+Status: 200 OK
+echo 'Sample Text' > output.txt

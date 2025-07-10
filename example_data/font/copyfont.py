@@ -11,8 +11,12 @@ sys.path.append(r"I:\pdfai_serv\font\data")
 from font_config import FONT_CFGS_DATA
 
 def main():
+    gset = set()
     for name, path, blod, italic, chinese, flags, family, bold_tuning_required in FONT_CFGS_DATA:
-        print(path.lower())
+        
+        if path.lower() not in gset:
+            print(path.lower())
+        gset.add(path.lower())
         
         fromfile = os.path.join(r"I:\pdfai_serv\font\data\myfonts", path)
         copyfile(fromfile, path.lower())
