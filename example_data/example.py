@@ -321,17 +321,23 @@ def create_vertical_configs_by_font():
                 font_list_subdir = FONT_LIST_DIR / "single_fonts"
                 font_list_subdir.mkdir(exist_ok=True)
                 
+                # Use safe ASCII filename for both file and directory names
                 font_name_safe = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')
-                single_font_file = font_list_subdir / f"{font_name_safe}.txt"
+                # Convert Chinese font names to safe ASCII names
+                font_name_ascii = font_name_safe.replace('宋体_常规', 'songti_regular').replace('黑体', 'heiti').replace('楷体', 'kaiti')
+                single_font_file = font_list_subdir / f"{font_name_ascii}.txt"
                 
                 # Create single font list file if it doesn't exist
                 if not single_font_file.exists():
                     with open(single_font_file, 'w', encoding='utf-8') as f:
                         f.write(font_name)
                 
+                # Use ASCII name for output directory to avoid path issues
+                cfg_name_ascii = f"{font_name_ascii}/{corpus_info['name']}/{style_key}"
+                
                 cfg = GeneratorCfg(
                     num_image=images_per_config,
-                    save_dir=OUT_DIR / cfg_name,
+                    save_dir=OUT_DIR / cfg_name_ascii,
                     render_cfg=RenderCfg(
                         bg_dir=BG_DIR,
                         perspective_transform=perspective_transform,
