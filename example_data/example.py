@@ -2,6 +2,7 @@ import inspect
 import os
 from pathlib import Path
 import imgaug.augmenters as iaa
+from pypinyin import pinyin, Style
 
 from text_renderer.effect import *
 from text_renderer.corpus import *
@@ -13,6 +14,29 @@ from text_renderer.config import (
 )
 from text_renderer.layout.same_line import SameLineLayout
 from text_renderer.layout.extra_text_line import ExtraTextLineLayout
+
+
+def convert_font_name_to_pinyin(font_name):
+    """
+    Convert Chinese font names to pinyin for safe ASCII filenames
+    """
+    # Convert Chinese characters to pinyin
+    pinyin_list = pinyin(font_name, style=Style.NORMAL, heteronym=False)
+    # Join pinyin syllables with underscore
+    result = '_'.join([item[0] for item in pinyin_list])
+    
+    # Clean up the result to be filesystem-safe
+    result = result.lower()
+    # Replace common separators and ensure ASCII-safe
+    result = result.replace(' ', '_').replace('-', '_')
+    # Remove any remaining non-ASCII characters and replace with underscore
+    result = ''.join(c if c.isalnum() or c == '_' else '_' for c in result)
+    # Clean up multiple underscores
+    while '__' in result:
+        result = result.replace('__', '_')
+    result = result.strip('_')
+    
+    return result if result else 'unknown_font'
 
 
 CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
@@ -323,8 +347,8 @@ def create_vertical_configs_by_font():
                 
                 # Use safe ASCII filename for both file and directory names
                 font_name_safe = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')
-                # Convert Chinese font names to safe ASCII names
-                font_name_ascii = font_name_safe.replace('宋体_常规', 'songti_regular').replace('黑体', 'heiti').replace('楷体', 'kaiti')
+                # Convert Chinese font names to pinyin for safe ASCII names
+                font_name_ascii = convert_font_name_to_pinyin(font_name_safe)
                 single_font_file = font_list_subdir / f"{font_name_ascii}.txt"
                 
                 # Create single font list file if it doesn't exist
