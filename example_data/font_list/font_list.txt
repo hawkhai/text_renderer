@@ -1,10 +1,6 @@
 arial_bold.ttf
-arial_bold_italic.ttf
-arial_italic.ttf
 arial_regular.ttf
 calibri_bold.ttf
-calibri_bold_italic.ttf
-calibri_italic.ttf
 calibri_regular.ttf
 comic_sans_ms_bold.ttf
 comic_sans_ms_regular.ttf
@@ -15,8 +11,6 @@ courier_new_regular.ttf
 segoe_script_bold.ttf
 segoe_script_regular.ttf
 times_new_roman_bold.ttf
-times_new_roman_bold_italic.ttf
-times_new_roman_italic.ttf
 times_new_roman_regular.ttf
 仿宋_regular.ttf
 华文行楷_regular.ttf
