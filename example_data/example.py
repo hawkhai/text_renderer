@@ -30,6 +30,27 @@ font_cfg = dict(
     font_size=(30, 31),
 )
 
+
+def get_font_names():
+    """Read font names from font_list.txt"""
+    font_list_file = FONT_LIST_DIR / "font_list.txt"
+    if font_list_file.exists():
+        with open(font_list_file, 'r', encoding='utf-8') as f:
+            fonts = [line.strip() for line in f if line.strip()]
+        return fonts
+    return ["simsun.ttf"]  # fallback
+
+
+def create_font_specific_cfg(font_name, base_name_suffix=""):
+    """Create font-specific configuration"""
+    font_name_clean = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')
+    return dict(
+        font_dir=FONT_DIR,
+        font_list_file=None,  # Use specific font
+        font_path=FONT_DIR / font_name,  # Direct font path
+        font_size=(30, 31),
+    )
+
 perspective_transform = NormPerspectiveTransformCfg(20, 20, 1.5)
 
 
@@ -200,123 +221,78 @@ def imgaug_emboss_example():
     )
 
 
-def vertical_text_basic():
+def create_vertical_configs_by_font():
     """
-    Basic vertical text samples with standard effects
+    Create vertical text configurations organized by font and corpus language
+    Directory structure: font_name/corpus_language/style/
     """
-    cfg = base_cfg(
-        inspect.currentframe().f_code.co_name,
-        corpus=CharCorpus(
-            CharCorpusCfg(
-                text_paths=[TEXT_DIR / "chn_text.txt", TEXT_DIR / "eng_text.txt"],
-                filter_by_chars=True,
-                chars_file=CHAR_DIR / "chn.txt",
-                length=(4, 8),
-                char_spacing=(0.05, 0.25),
-                horizontal=False,
-                **font_cfg
-            ),
-        ),
-        corpus_effects=Effects(
-            [
+    font_names = get_font_names()
+    configs = []
+    
+    # Define corpus configurations
+    corpus_configs = {
+        'chinese': {
+            'text_paths': [TEXT_DIR / "chn_text.txt"],
+            'chars_file': CHAR_DIR / "chn.txt",
+            'name': 'chinese'
+        },
+        'english': {
+            'text_paths': [TEXT_DIR / "eng_text.txt"],
+            'chars_file': CHAR_DIR / "eng.txt",
+            'name': 'english'
+        },
+        'mixed': {
+            'text_paths': [TEXT_DIR / "chn_text.txt", TEXT_DIR / "eng_text.txt"],
+            'chars_file': CHAR_DIR / "chn.txt",
+            'name': 'mixed'
+        }
+    }
+    
+    # Style configurations
+    style_configs = {
+        'basic': {
+            'length': (4, 8),
+            'char_spacing': (0.05, 0.25),
+            'font_size': (30, 31),
+            'effects': Effects([
                 Line(0.2, color_cfg=FixedTextColorCfg()),
                 OneOf([DropoutRand(), DropoutVertical(), NoEffects()]),
-            ]
-        ),
-    )
-    cfg.num_image = 2500  # 1/4 of total vertical images
-    return cfg
-
-
-def vertical_text_long():
-    """
-    Long vertical text samples
-    """
-    cfg = base_cfg(
-        inspect.currentframe().f_code.co_name,
-        corpus=CharCorpus(
-            CharCorpusCfg(
-                text_paths=[TEXT_DIR / "chn_text.txt", TEXT_DIR / "eng_text.txt"],
-                filter_by_chars=True,
-                chars_file=CHAR_DIR / "chn.txt",
-                length=(8, 15),  # Longer text
-                char_spacing=(0.1, 0.4),
-                horizontal=False,
-                font_dir=font_cfg["font_dir"],
-                font_list_file=font_cfg["font_list_file"],
-                font_size=(25, 35),  # Variable font size
-            ),
-        ),
-        corpus_effects=Effects(
-            [
+            ]),
+            'gray': True
+        },
+        'long': {
+            'length': (8, 15),
+            'char_spacing': (0.1, 0.4),
+            'font_size': (25, 35),
+            'effects': Effects([
                 OneOf([
                     Line(0.4, color_cfg=FixedTextColorCfg()),
                     DropoutVertical(),
                     Padding(p=0.3, w_ratio=[0.1, 0.2], h_ratio=[0.1, 0.3], center=True),
                     NoEffects()
                 ]),
-            ]
-        ),
-    )
-    cfg.num_image = 2500  # 1/4 of total vertical images
-    return cfg
-
-
-def vertical_text_compact():
-    """
-    Compact vertical text with tight spacing
-    """
-    cfg = base_cfg(
-        inspect.currentframe().f_code.co_name,
-        corpus=CharCorpus(
-            CharCorpusCfg(
-                text_paths=[TEXT_DIR / "chn_text.txt"],  # Focus on Chinese
-                filter_by_chars=True,
-                chars_file=CHAR_DIR / "chn.txt",
-                length=(5, 12),
-                char_spacing=(-0.1, 0.1),  # Tight spacing
-                horizontal=False,
-                font_dir=font_cfg["font_dir"],
-                font_list_file=font_cfg["font_list_file"],
-                font_size=(28, 32),
-            ),
-        ),
-        corpus_effects=Effects(
-            [
+            ]),
+            'gray': True
+        },
+        'compact': {
+            'length': (5, 12),
+            'char_spacing': (-0.1, 0.1),
+            'font_size': (28, 32),
+            'effects': Effects([
                 OneOf([
                     DropoutRand(dropout_p=(0.1, 0.3)),
                     DropoutVertical(num_line=(1, 3)),
                     Line(0.3, thickness=(1, 3)),
                     NoEffects()
                 ]),
-            ]
-        ),
-    )
-    cfg.num_image = 2500  # 1/4 of total vertical images
-    return cfg
-
-
-def vertical_text_stylized():
-    """
-    Stylized vertical text with enhanced effects
-    """
-    cfg = base_cfg(
-        inspect.currentframe().f_code.co_name,
-        corpus=CharCorpus(
-            CharCorpusCfg(
-                text_paths=[TEXT_DIR / "chn_text.txt", TEXT_DIR / "eng_text.txt"],
-                filter_by_chars=True,
-                chars_file=CHAR_DIR / "chn.txt",
-                length=(6, 10),
-                char_spacing=(0.2, 0.5),  # Loose spacing for effects
-                horizontal=False,
-                font_dir=font_cfg["font_dir"],
-                font_list_file=font_cfg["font_list_file"],
-                font_size=(32, 40),  # Larger font for effects
-            ),
-        ),
-        corpus_effects=Effects(
-            [
+            ]),
+            'gray': True
+        },
+        'stylized': {
+            'length': (6, 10),
+            'char_spacing': (0.2, 0.5),
+            'font_size': (32, 40),
+            'effects': Effects([
                 Padding(p=0.5, w_ratio=[0.15, 0.25], h_ratio=[0.2, 0.4], center=True),
                 OneOf([
                     [Line(0.6, color_cfg=FixedTextColorCfg(), thickness=(2, 4)), DropoutRand()],
@@ -324,12 +300,48 @@ def vertical_text_stylized():
                     ImgAugEffect(aug=iaa.Emboss(alpha=(0.5, 0.8), strength=(0.8, 1.2))),
                     NoEffects()
                 ]),
-            ]
-        ),
-        gray=False,  # Color images for some variety
-    )
-    cfg.num_image = 2500  # 1/4 of total vertical images
-    return cfg
+            ]),
+            'gray': False
+        }
+    }
+    
+    # Calculate images per configuration
+    total_configs = len(font_names) * len(corpus_configs) * len(style_configs)
+    images_per_config = 10000 // total_configs
+    
+    for font_name in font_names:
+        font_name_clean = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')
+        
+        for corpus_key, corpus_info in corpus_configs.items():
+            for style_key, style_info in style_configs.items():
+                # Create configuration name: font/corpus/style
+                cfg_name = f"{font_name_clean}/{corpus_info['name']}/{style_key}"
+                
+                cfg = GeneratorCfg(
+                    num_image=images_per_config,
+                    save_dir=OUT_DIR / cfg_name,
+                    render_cfg=RenderCfg(
+                        bg_dir=BG_DIR,
+                        perspective_transform=perspective_transform,
+                        gray=style_info['gray'],
+                        corpus=CharCorpus(
+                            CharCorpusCfg(
+                                text_paths=corpus_info['text_paths'],
+                                filter_by_chars=True,
+                                chars_file=corpus_info['chars_file'],
+                                length=style_info['length'],
+                                char_spacing=style_info['char_spacing'],
+                                horizontal=False,  # Vertical text
+                                font_dir=FONT_DIR,
+                                font_size=style_info['font_size'],
+                            ),
+                        ),
+                        corpus_effects=style_info['effects'],
+                    ),
+                )
+                configs.append(cfg)
+    
+    return configs
 
 
 # fmt: off
@@ -342,10 +354,7 @@ configs = [
     same_line_data(),
     extra_text_line_data(),
     imgaug_emboss_example(),
-    # Vertical text samples - 4 different styles, 10000 images total
-    vertical_text_basic(),     # 2500 images - basic vertical text
-    vertical_text_long(),      # 2500 images - longer vertical text
-    vertical_text_compact(),   # 2500 images - compact spacing
-    vertical_text_stylized(),  # 2500 images - enhanced effects
+    # Vertical text samples - organized by font, 4 styles each
+    *create_vertical_configs_by_font(),  # Dynamic configs for each font
 ]
 # fmt: on
