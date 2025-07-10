@@ -112,6 +112,10 @@ class Effects:
             effects = [effects]
         self.effects = effects
 
+    def __call__(self, img: PILImage, text_bbox: BBox) -> Tuple[PILImage, BBox]:
+        """Make Effects callable to be compatible with OneOf selector"""
+        return self.apply_effects(img, text_bbox)
+
     def apply_effects(self, img: PILImage, bbox: BBox) -> Tuple[PILImage, BBox]:
         """
 

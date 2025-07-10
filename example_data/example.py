@@ -295,7 +295,7 @@ def create_vertical_configs_by_font():
             'effects': Effects([
                 Padding(p=0.5, w_ratio=[0.15, 0.25], h_ratio=[0.2, 0.4], center=True),
                 OneOf([
-                    [Line(0.6, color_cfg=FixedTextColorCfg(), thickness=(2, 4)), DropoutRand()],
+                    Effects([Line(0.6, color_cfg=FixedTextColorCfg(), thickness=(2, 4)), DropoutRand()]),
                     DropoutVertical(num_line=3, thickness=2),
                     ImgAugEffect(aug=iaa.Emboss(alpha=(0.5, 0.8), strength=(0.8, 1.2))),
                     NoEffects()
@@ -307,7 +307,7 @@ def create_vertical_configs_by_font():
     
     # Calculate images per configuration
     total_configs = len(font_names) * len(corpus_configs) * len(style_configs)
-    images_per_config = 1000 // total_configs
+    images_per_config = 12000 // total_configs
     
     for font_name in font_names:
         font_name_clean = font_name.replace('.ttf', '').replace('.otf', '').replace('.ttc', '')
