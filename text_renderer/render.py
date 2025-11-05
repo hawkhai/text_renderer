@@ -77,25 +77,37 @@ class Render:
                 mask_normed = cv2.resize(gray_mask, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
                 
                 # 增强mask：确保文字区域有很多255像素
-                # 先normalize到0-255，然后应用阈值
                 mask_normed = mask_normed.astype(np.float32)
                 mask_max = mask_normed.max()
                 if mask_max > 0:
-                    # 先拉伸到0-255
                     mask_normed = (mask_normed / mask_max * 255)
-                    # 应用阈值：大于30的像素设为255，否则为0
-                    # 这样可以保留一些灰度渐变同时确保核心区域是255
                     mask_normed = np.where(mask_normed > 30, mask_normed, 0)
-                    # 对于高亮度区域（>150），直接设为255，确保有更多255像素
                     mask_normed = np.where(mask_normed > 150, 255, mask_normed)
                     mask_normed = mask_normed.clip(0, 255).astype(np.uint8)
                 else:
                     mask_normed = mask_normed.astype(np.uint8)
                 
-                # 返回格式：[input_image, mask_image]
-                # input_image: BGR格式，用于保存为jpg
-                # mask_image: 单通道灰度，文字区域255，背景0，用于保存为png
-                np_img = [img_normed, mask_normed]
+                # 根据save_mask_separately参数决定返回格式
+                if self.cfg.save_mask_separately:
+                    # 分离存储模式：返回[input_image, mask_image]
+                    # input_image: BGR格式，用于保存为jpg
+                    # mask_image: 单通道灰度，用于保存为png
+                    np_img = [img_normed, mask_normed]
+                else:
+                    # 三图合一模式：上下堆叠输入图、背景图、mask图
+                    bg_array = cv2.cvtColor(np.array(cropped_bg.convert("RGB")), cv2.COLOR_RGB2BGR)
+                    bg_normed = cv2.resize(bg_array, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
+                    
+                    # 转mask为RGB用于显示
+                    mask_display = cv2.cvtColor(mask_normed, cv2.COLOR_GRAY2BGR)
+                    
+                    # 三图上下堆叠：输入图、背景图、mask图
+                    merge_target = np.zeros((target_h * 3, target_w, 3), dtype=np.uint8)
+                    merge_target[0:target_h, :] = img_normed           # 顶部：带干扰的输入
+                    merge_target[target_h:target_h*2, :] = bg_normed   # 中部：纯背景
+                    merge_target[target_h*2:target_h*3, :] = mask_display  # 底部：纯净mask
+                    
+                    np_img = merge_target
             else:
                 img = img.convert("RGB")
                 np_img = np.array(img)

@@ -166,6 +166,7 @@ class RenderCfg:
     gray: bool = True
     text_color_cfg: TextColorCfg = None
     return_bg_and_mask: bool = False
+    save_mask_separately: bool = False  # True: 分离存储(images/和labels/)，False: 三图合一(仅images/)
 
 
 # noinspection PyUnresolvedReferences
