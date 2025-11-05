@@ -1,0 +1,6 @@
+arial_regular.ttf
+arial_bold.ttf
+times_new_roman_regular.ttf
+times_new_roman_bold.ttf
+calibri_regular.ttf
+calibri_bold.ttf
