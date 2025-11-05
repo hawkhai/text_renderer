@@ -85,6 +85,12 @@ class ImgDataset(Dataset):
         self._img_dir = os.path.join(data_dir, "images")
         if not os.path.exists(self._img_dir):
             os.makedirs(self._img_dir)
+        
+        # 创建labels文件夹用于保存mask
+        self._mask_dir = os.path.join(data_dir, "labels")
+        if not os.path.exists(self._mask_dir):
+            os.makedirs(self._mask_dir)
+        
         self._label_path = os.path.join(data_dir, self.LABEL_NAME)
 
         self._data = {"num-samples": 0, "labels": {}, "sizes": {}}
@@ -92,13 +98,33 @@ class ImgDataset(Dataset):
             with open(self._label_path, "r", encoding="utf-8") as f:
                 self._data = json.load(f)
 
-    def write(self, name: str, image: np.ndarray, label: str):
-        img_path = os.path.join(self._img_dir, name + ".jpg")
-        cv2.imwrite(img_path, image, self.encode_param())
-        self._data["labels"][name] = label
+    def write(self, name: str, image, label: str):
+        # 支持两种格式：
+        # 1. 普通模式：image是ndarray
+        # 2. bg_and_mask模式：image是[input_image, mask_image]列表
+        if isinstance(image, list):
+            # bg_and_mask模式：分别保存输入图像和mask
+            input_img, mask_img = image
+            
+            # 保存输入图像为jpg
+            img_path = os.path.join(self._img_dir, name + ".jpg")
+            cv2.imwrite(img_path, input_img, self.encode_param())
+            
+            # 保存mask为png（保留灰度信息）
+            mask_path = os.path.join(self._mask_dir, name + ".png")
+            cv2.imwrite(mask_path, mask_img)
+            
+            self._data["labels"][name] = label
+            height, width = input_img.shape[:2]
+            self._data["sizes"][name] = (width, height)
+        else:
+            # 普通模式：保存单个图像
+            img_path = os.path.join(self._img_dir, name + ".jpg")
+            cv2.imwrite(img_path, image, self.encode_param())
+            self._data["labels"][name] = label
 
-        height, width = image.shape[:2]
-        self._data["sizes"][name] = (width, height)
+            height, width = image.shape[:2]
+            self._data["sizes"][name] = (width, height)
 
     def read(self, name: str) -> Dict:
         img_path = os.path.join(self._img_dir, name + ".jpg")
