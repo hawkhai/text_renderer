@@ -49,9 +49,9 @@ class Render:
     def __call__(self, *args, **kwargs) -> Tuple[np.ndarray, str]:
         try:
             if self._should_apply_layout():
-                img, text, cropped_bg, transformed_text_mask = self.gen_multi_corpus()
+                img, text, cropped_bg, transformed_text_mask, pure_text_mask = self.gen_multi_corpus()
             else:
-                img, text, cropped_bg, transformed_text_mask = self.gen_single_corpus()
+                img, text, cropped_bg, transformed_text_mask, pure_text_mask = self.gen_single_corpus()
 
             if self.cfg.render_effects is not None:
                 img, _ = self.cfg.render_effects.apply_effects(
@@ -59,24 +59,42 @@ class Render:
                 )
 
             if self.cfg.return_bg_and_mask:
-                gray_text_mask = np.array(transformed_text_mask.convert("L"))
-                _, gray_text_mask = cv2.threshold(
-                    gray_text_mask, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU
-                )
-                transformed_text_mask = Image.fromarray(255 - gray_text_mask)
+                # 使用纯净的文字mask（不含干扰效果），保留灰度信息
+                # 将RGBA转为灰度，保留alpha通道作为灰度值
+                pure_text_array = np.array(pure_text_mask)
+                if pure_text_array.shape[2] == 4:  # RGBA
+                    # 使用alpha通道作为mask强度（保留灰度渐变）
+                    gray_mask = pure_text_array[:, :, 3]  # 取alpha通道
+                else:
+                    gray_mask = cv2.cvtColor(pure_text_array, cv2.COLOR_RGB2GRAY)
+                
+                # 转为PIL图像，用于显示
+                mask_img_for_display = Image.fromarray(gray_mask).convert("RGB")
 
-                merge_target = Image.new("RGBA", (img.width * 3, img.height))
-                merge_target.paste(img, (0, 0))
-                merge_target.paste(cropped_bg, (img.width, 0))
-                merge_target.paste(
-                    transformed_text_mask,
-                    (img.width * 2, 0),
-                    mask=transformed_text_mask,
-                )
+                # 先对img进行norm处理（调整高度到64），获得目标尺寸
+                img_array = cv2.cvtColor(np.array(img.convert("RGB")), cv2.COLOR_RGB2BGR)
+                img_normed = self.norm(img_array)
+                target_h, target_w = img_normed.shape[:2]  # 获取norm后的目标尺寸
+                
+                # bg和mask按相同的尺寸resize
+                bg_array = cv2.cvtColor(np.array(cropped_bg.convert("RGB")), cv2.COLOR_RGB2BGR)
+                mask_array = cv2.cvtColor(np.array(mask_img_for_display), cv2.COLOR_RGB2BGR)
+                
+                bg_normed = cv2.resize(bg_array, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
+                mask_normed = cv2.resize(mask_array, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
+                
+                # 转回RGB用于堆叠
+                img_normed_rgb = cv2.cvtColor(img_normed, cv2.COLOR_BGR2RGB)
+                bg_normed_rgb = cv2.cvtColor(bg_normed, cv2.COLOR_BGR2RGB)
+                mask_normed_rgb = cv2.cvtColor(mask_normed, cv2.COLOR_BGR2RGB)
+                
+                # 改为上下堆叠（垂直堆叠），每部分高度64，总高度192
+                merge_target = np.zeros((target_h * 3, target_w, 3), dtype=np.uint8)
+                merge_target[0:target_h, :] = img_normed_rgb                    # 顶部：带干扰的图像
+                merge_target[target_h:target_h*2, :] = bg_normed_rgb            # 中部：纯背景
+                merge_target[target_h*2:target_h*3, :] = mask_normed_rgb        # 底部：纯净mask
 
-                np_img = np.array(merge_target)
-                np_img = cv2.cvtColor(np_img, cv2.COLOR_RGBA2BGR)
-                np_img = self.norm(np_img)
+                np_img = cv2.cvtColor(merge_target, cv2.COLOR_RGB2BGR)
             else:
                 img = img.convert("RGB")
                 np_img = np.array(img)
@@ -87,7 +105,7 @@ class Render:
             logger.exception(e)
             raise e
 
-    def gen_single_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage]:
+    def gen_single_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage, PILImage]:
         font_text = self.corpus.sample()
 
         bg = self.bg_manager.get_bg()
@@ -101,6 +119,9 @@ class Render:
         text_mask = draw_text_on_bg(
             font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
         )
+        
+        # 保存纯净的文字mask（用于生成最终的mask输出，不含干扰）
+        pure_text_mask = text_mask.copy()
 
         if self.cfg.corpus_effects is not None:
             text_mask, _ = self.cfg.corpus_effects.apply_effects(
@@ -117,18 +138,22 @@ class Render:
                     transformed_text_mask,
                     transformed_text_pnts,
                 ) = transformer.do_warp_perspective(text_mask)
+                
+                # 对纯净mask也应用相同的perspective transform
+                pure_transformed_mask, _ = transformer.do_warp_perspective(pure_text_mask)
             except Exception as e:
                 logger.exception(e)
                 logger.error(font_text.font_path, "text", font_text.text)
                 raise e
         else:
             transformed_text_mask = text_mask
+            pure_transformed_mask = pure_text_mask
 
         img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
 
-        return img, font_text.text, cropped_bg, transformed_text_mask
+        return img, font_text.text, cropped_bg, transformed_text_mask, pure_transformed_mask
 
-    def gen_multi_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage]:
+    def gen_multi_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage, PILImage]:
         font_texts: List[FontText] = [it.sample() for it in self.corpus]
 
         bg = self.bg_manager.get_bg()
@@ -137,7 +162,7 @@ class Render:
         if self.cfg.text_color_cfg is not None:
             text_color = self.cfg.text_color_cfg.get_color(bg)
 
-        text_masks, text_bboxes = [], []
+        text_masks, text_bboxes, pure_text_masks = [], [], []
         for i in range(len(font_texts)):
             font_text = font_texts[i]
 
@@ -148,6 +173,9 @@ class Render:
             text_mask = draw_text_on_bg(
                 font_text, _text_color, char_spacing=self.corpus[i].cfg.char_spacing
             )
+            
+            # 保存纯净的文字mask
+            pure_text_masks.append(text_mask.copy())
 
             text_bbox = BBox.from_size(text_mask.size)
             if self.cfg.corpus_effects is not None:
@@ -171,6 +199,11 @@ class Render:
         merged_text_mask = transparent_img(merged_bbox.size)
         for text_mask, bbox in zip(text_masks, text_mask_bboxes):
             merged_text_mask.paste(text_mask, bbox.left_top)
+        
+        # 创建纯净的merged mask（不含effects）
+        pure_merged_mask = transparent_img(merged_bbox.size)
+        for pure_mask, bbox in zip(pure_text_masks, text_mask_bboxes):
+            pure_merged_mask.paste(pure_mask, bbox.left_top)
 
         if self.cfg.perspective_transform is not None:
             transformer = PerspectiveTransform(self.cfg.perspective_transform)
@@ -181,8 +214,12 @@ class Render:
                 transformed_text_mask,
                 transformed_text_pnts,
             ) = transformer.do_warp_perspective(merged_text_mask)
+            
+            # 对纯净mask也应用perspective transform
+            pure_transformed_mask, _ = transformer.do_warp_perspective(pure_merged_mask)
         else:
             transformed_text_mask = merged_text_mask
+            pure_transformed_mask = pure_merged_mask
 
         if self.cfg.layout_effects is not None:
             transformed_text_mask, _ = self.cfg.layout_effects.apply_effects(
@@ -191,7 +228,7 @@ class Render:
 
         img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
 
-        return img, merged_text, cropped_bg, transformed_text_mask
+        return img, merged_text, cropped_bg, transformed_text_mask, pure_transformed_mask
 
     def paste_text_mask_on_bg(
         self, bg: PILImage, transformed_text_mask: PILImage
