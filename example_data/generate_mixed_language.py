@@ -132,6 +132,7 @@ def chinese_horizontal_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
@@ -221,6 +222,7 @@ def chinese_no_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 

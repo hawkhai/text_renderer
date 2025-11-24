@@ -59,9 +59,9 @@ class Render:
                 )
 
             if self.cfg.return_bg_and_mask:
-                # 使用纯净的文字mask（不含干扰效果），保留灰度信息
+                # 使用纯净的文字mask（不含干扰线等效果），但已完成与文字图相同的几何变换
                 # 将RGBA转为灰度，保留alpha通道作为灰度值
-                pure_text_array = np.array(transformed_text_mask)
+                pure_text_array = np.array(pure_text_mask)
                 if pure_text_array.shape[2] == 4:  # RGBA
                     # 使用alpha通道作为mask强度（保留灰度渐变）
                     gray_mask = pure_text_array[:, :, 3]  # 取alpha通道
@@ -73,19 +73,9 @@ class Render:
                 img_normed = self.norm(img_array)
                 target_h, target_w = img_normed.shape[:2]  # 获取norm后的目标尺寸
                 
-                # mask按相同的尺寸resize，保持单通道
+                # mask按相同的尺寸resize，保持单通道，仅做几何缩放，不做二次阈值，避免轮廓形状被改变
                 mask_normed = cv2.resize(gray_mask, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
-                
-                # 增强mask：确保文字区域有很多255像素
-                mask_normed = mask_normed.astype(np.float32)
-                mask_max = mask_normed.max()
-                if mask_max > 0:
-                    mask_normed = (mask_normed / mask_max * 255)
-                    mask_normed = np.where(mask_normed > 30, mask_normed, 0)
-                    mask_normed = np.where(mask_normed > 150, 255, mask_normed)
-                    mask_normed = mask_normed.clip(0, 255).astype(np.uint8)
-                else:
-                    mask_normed = mask_normed.astype(np.uint8)
+                mask_normed = mask_normed.astype(np.uint8)
                 
                 # 根据save_mask_separately参数决定返回格式
                 if self.cfg.save_mask_separately:
