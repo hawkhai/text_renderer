@@ -281,11 +281,42 @@ class Render:
         bg.paste(transformed_text_mask, (0, 0), mask=transformed_text_mask)
 
         if pure_transformed_mask is not None:
-            aligned_pure_mask = pure_transformed_mask.copy()
+            aligned_pure_mask = self._align_mask_to_text(
+                pure_transformed_mask, transformed_text_mask
+            )
         else:
             aligned_pure_mask = transformed_text_mask.copy()
 
         return bg, _bg, aligned_pure_mask
+
+    def _align_mask_to_text(
+        self, pure_mask: PILImage, text_mask: PILImage
+    ) -> PILImage:
+        if pure_mask.size == text_mask.size:
+            return pure_mask
+
+        template = np.array(pure_mask.split()[-1]).astype(np.float32)
+        search = np.array(text_mask.split()[-1]).astype(np.float32)
+
+        if (
+            template.shape[0] > search.shape[0]
+            or template.shape[1] > search.shape[1]
+            or template.size == 0
+        ):
+            aligned = Image.new("RGBA", text_mask.size, (0, 0, 0, 0))
+            paste_xy = (
+                max((text_mask.width - pure_mask.width) // 2, 0),
+                max((text_mask.height - pure_mask.height) // 2, 0),
+            )
+            aligned.paste(pure_mask, paste_xy, pure_mask)
+            return aligned
+
+        res = cv2.matchTemplate(search, template, cv2.TM_CCOEFF_NORMED)
+        y, x = np.unravel_index(np.argmax(res), res.shape)
+
+        aligned = Image.new("RGBA", text_mask.size, (0, 0, 0, 0))
+        aligned.paste(pure_mask, (int(x), int(y)), pure_mask)
+        return aligned
 
     def _should_apply_layout(self) -> bool:
         return isinstance(self.corpus, list) and len(self.corpus) > 1
