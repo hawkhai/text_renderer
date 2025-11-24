@@ -114,7 +114,7 @@ def get_mixed_corpus():
 def chinese_horizontal_lines():
     """中文 - 水平线"""
     return GeneratorCfg(
-        num_image=120,  # 200 * 0.6
+        num_image=600,  # 120 * 5
         save_dir=OUT_DIR / "chinese_horizontal_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -140,7 +140,7 @@ def chinese_horizontal_lines():
 def chinese_vertical_lines():
     """中文 - 垂直线"""
     return GeneratorCfg(
-        num_image=120,
+        num_image=600,  # 120 * 5
         save_dir=OUT_DIR / "chinese_vertical_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -158,6 +158,7 @@ def chinese_vertical_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
@@ -165,7 +166,7 @@ def chinese_vertical_lines():
 def chinese_all_lines():
     """中文 - 所有线条"""
     return GeneratorCfg(
-        num_image=180,  # 300 * 0.6
+        num_image=900,  # 180 * 5
         save_dir=OUT_DIR / "chinese_all_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -183,6 +184,7 @@ def chinese_all_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
@@ -190,7 +192,7 @@ def chinese_all_lines():
 def chinese_multiple_lines():
     """中文 - 多条线"""
     return GeneratorCfg(
-        num_image=150,  # 250 * 0.6
+        num_image=750,  # 150 * 5
         save_dir=OUT_DIR / "chinese_multiple_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -204,6 +206,7 @@ def chinese_multiple_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
@@ -211,7 +214,7 @@ def chinese_multiple_lines():
 def chinese_no_lines():
     """中文 - 无线条"""
     return GeneratorCfg(
-        num_image=60,  # 100 * 0.6
+        num_image=300,  # 60 * 5
         save_dir=OUT_DIR / "chinese_no_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -232,7 +235,7 @@ def chinese_no_lines():
 def english_horizontal_lines():
     """英文 - 水平线"""
     return GeneratorCfg(
-        num_image=60,  # 200 * 0.3
+        num_image=300,  # 60 * 5
         save_dir=OUT_DIR / "english_horizontal_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -257,7 +260,7 @@ def english_horizontal_lines():
 def english_vertical_lines():
     """英文 - 垂直线"""
     return GeneratorCfg(
-        num_image=60,
+        num_image=300,  # 60 * 5
         save_dir=OUT_DIR / "english_vertical_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -282,7 +285,7 @@ def english_vertical_lines():
 def english_all_lines():
     """英文 - 所有线条"""
     return GeneratorCfg(
-        num_image=90,  # 300 * 0.3
+        num_image=450,  # 90 * 5
         save_dir=OUT_DIR / "english_all_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -307,7 +310,7 @@ def english_all_lines():
 def english_multiple_lines():
     """英文 - 多条线"""
     return GeneratorCfg(
-        num_image=75,  # 250 * 0.3
+        num_image=375,  # 75 * 5
         save_dir=OUT_DIR / "english_multiple_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -328,7 +331,7 @@ def english_multiple_lines():
 def english_no_lines():
     """英文 - 无线条"""
     return GeneratorCfg(
-        num_image=30,  # 100 * 0.3
+        num_image=150,  # 30 * 5
         save_dir=OUT_DIR / "english_no_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -339,6 +342,7 @@ def english_no_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
@@ -348,7 +352,7 @@ def english_no_lines():
 def mixed_horizontal_lines():
     """混合 - 水平线"""
     return GeneratorCfg(
-        num_image=20,  # 200 * 0.1
+        num_image=100,  # 20 * 5
         save_dir=OUT_DIR / "mixed_horizontal_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -373,7 +377,7 @@ def mixed_horizontal_lines():
 def mixed_vertical_lines():
     """混合 - 垂直线"""
     return GeneratorCfg(
-        num_image=20,
+        num_image=100,  # 20 * 5
         save_dir=OUT_DIR / "mixed_vertical_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -398,7 +402,7 @@ def mixed_vertical_lines():
 def mixed_all_lines():
     """混合 - 所有线条"""
     return GeneratorCfg(
-        num_image=30,  # 300 * 0.1
+        num_image=150,  # 30 * 5
         save_dir=OUT_DIR / "mixed_all_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -423,7 +427,7 @@ def mixed_all_lines():
 def mixed_multiple_lines():
     """混合 - 多条线"""
     return GeneratorCfg(
-        num_image=25,  # 250 * 0.1
+        num_image=125,  # 25 * 5
         save_dir=OUT_DIR / "mixed_multiple_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -444,7 +448,7 @@ def mixed_multiple_lines():
 def mixed_no_lines():
     """混合 - 无线条"""
     return GeneratorCfg(
-        num_image=10,  # 100 * 0.1
+        num_image=50,  # 10 * 5
         save_dir=OUT_DIR / "mixed_no_lines",
         render_cfg=RenderCfg(
             bg_dir=BG_DIR,
@@ -455,6 +459,7 @@ def mixed_no_lines():
             gray=False,
             text_color_cfg=SimpleTextColorCfg(),
             return_bg_and_mask=True,
+            save_mask_separately=True,
         ),
     )
 
