@@ -75,7 +75,16 @@ class Render:
                 
                 # mask按相同的尺寸resize，保持单通道，仅做几何缩放，不做二次阈值，避免轮廓形状被改变
                 mask_normed = cv2.resize(gray_mask, (target_w, target_h), interpolation=cv2.INTER_CUBIC)
-                mask_normed = mask_normed.astype(np.uint8)
+                mask_normed = mask_normed.astype(np.float32)
+
+                # 归一化：背景纯黑(0)，文字最高亮度255，可保留中间梯度
+                min_val = mask_normed.min()
+                if min_val > 0:
+                    mask_normed -= min_val
+                max_val = mask_normed.max()
+                if max_val > 0:
+                    mask_normed = mask_normed / max_val * 255.0
+                mask_normed = np.clip(mask_normed, 0, 255).astype(np.uint8)
                 
                 # 根据save_mask_separately参数决定返回格式
                 if self.cfg.save_mask_separately:
