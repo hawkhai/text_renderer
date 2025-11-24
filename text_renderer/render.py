@@ -61,7 +61,7 @@ class Render:
             if self.cfg.return_bg_and_mask:
                 # 使用纯净的文字mask（不含干扰效果），保留灰度信息
                 # 将RGBA转为灰度，保留alpha通道作为灰度值
-                pure_text_array = np.array(pure_text_mask)
+                pure_text_array = np.array(transformed_text_mask)
                 if pure_text_array.shape[2] == 4:  # RGBA
                     # 使用alpha通道作为mask强度（保留灰度渐变）
                     gray_mask = pure_text_array[:, :, 3]  # 取alpha通道
