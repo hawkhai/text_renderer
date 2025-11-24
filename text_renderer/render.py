@@ -119,18 +119,19 @@ class Render:
         if self.corpus.cfg.text_color_cfg is not None:
             text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
 
+        # 基础文字mask（只包含文字，不含干扰线等效果）
         text_mask = draw_text_on_bg(
             font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
         )
-        
-        # 保存纯净的文字mask（用于生成最终的mask输出，不含干扰）
         pure_text_mask = text_mask.copy()
 
+        # 仅在用于最终渲染的分支上叠加干扰线等效果
         if self.cfg.corpus_effects is not None:
             text_mask, _ = self.cfg.corpus_effects.apply_effects(
                 text_mask, BBox.from_size(text_mask.size)
             )
 
+        # 几何变换（透视），对文字图和纯净mask使用完全相同的变换
         if self.cfg.perspective_transform is not None:
             transformer = PerspectiveTransform(self.cfg.perspective_transform)
             # TODO: refactor this, now we must call get_transformed_size to call gen_warp_matrix
@@ -141,8 +142,7 @@ class Render:
                     transformed_text_mask,
                     transformed_text_pnts,
                 ) = transformer.do_warp_perspective(text_mask)
-                
-                # 对纯净mask也应用相同的perspective transform
+
                 pure_transformed_mask, _ = transformer.do_warp_perspective(pure_text_mask)
             except Exception as e:
                 logger.exception(e)
@@ -173,14 +173,14 @@ class Render:
                 _text_color = self.corpus[i].cfg.text_color_cfg.get_color(bg)
             else:
                 _text_color = text_color
+            # 基础文字mask（仅文字）
             text_mask = draw_text_on_bg(
                 font_text, _text_color, char_spacing=self.corpus[i].cfg.char_spacing
             )
-            
-            # 保存纯净的文字mask
             pure_text_masks.append(text_mask.copy())
 
             text_bbox = BBox.from_size(text_mask.size)
+            # 仅在用于渲染的分支上叠加干扰/效果
             if self.cfg.corpus_effects is not None:
                 effects = self.cfg.corpus_effects[i]
                 if effects is not None:
@@ -202,12 +202,13 @@ class Render:
         merged_text_mask = transparent_img(merged_bbox.size)
         for text_mask, bbox in zip(text_masks, text_mask_bboxes):
             merged_text_mask.paste(text_mask, bbox.left_top)
-        
-        # 创建纯净的merged mask（不含effects）
+
+        # 纯净文字mask的布局合并（不含干扰线）
         pure_merged_mask = transparent_img(merged_bbox.size)
         for pure_mask, bbox in zip(pure_text_masks, text_mask_bboxes):
             pure_merged_mask.paste(pure_mask, bbox.left_top)
 
+        # 透视等几何变换，对两条分支使用完全相同的参数
         if self.cfg.perspective_transform is not None:
             transformer = PerspectiveTransform(self.cfg.perspective_transform)
             # TODO: refactor this, now we must call get_transformed_size to call gen_warp_matrix
@@ -217,16 +218,19 @@ class Render:
                 transformed_text_mask,
                 transformed_text_pnts,
             ) = transformer.do_warp_perspective(merged_text_mask)
-            
-            # 对纯净mask也应用perspective transform
+
             pure_transformed_mask, _ = transformer.do_warp_perspective(pure_merged_mask)
         else:
             transformed_text_mask = merged_text_mask
             pure_transformed_mask = pure_merged_mask
 
+        # 布局效果同时作用在文字图和纯净mask上
         if self.cfg.layout_effects is not None:
             transformed_text_mask, _ = self.cfg.layout_effects.apply_effects(
                 transformed_text_mask, BBox.from_size(transformed_text_mask.size)
+            )
+            pure_transformed_mask, _ = self.cfg.layout_effects.apply_effects(
+                pure_transformed_mask, BBox.from_size(pure_transformed_mask.size)
             )
 
         img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
