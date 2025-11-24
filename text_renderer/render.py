@@ -83,6 +83,13 @@ class Render:
                     # input_image: BGR格式，用于保存为jpg
                     # mask_image: 单通道灰度，用于保存为png
                     np_img = [img_normed, mask_normed]
+
+                    # 强断言：两张输出图片的空间尺寸（高、宽）必须完全一致，忽略通道数
+                    assert (
+                        isinstance(np_img[0], np.ndarray)
+                        and isinstance(np_img[1], np.ndarray)
+                        and np_img[0].shape[:2] == np_img[1].shape[:2]
+                    ), f"image/mask size mismatch: img={np_img[0].shape}, mask={np_img[1].shape}"
                 else:
                     # 三图合一模式：上下堆叠输入图、背景图、mask图
                     bg_array = cv2.cvtColor(np.array(cropped_bg.convert("RGB")), cv2.COLOR_RGB2BGR)
@@ -152,9 +159,11 @@ class Render:
             transformed_text_mask = text_mask
             pure_transformed_mask = pure_text_mask
 
-        img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
+        img, cropped_bg, aligned_pure_mask = self.paste_text_mask_on_bg(
+            bg, transformed_text_mask, pure_transformed_mask
+        )
 
-        return img, font_text.text, cropped_bg, transformed_text_mask, pure_transformed_mask
+        return img, font_text.text, cropped_bg, transformed_text_mask, aligned_pure_mask
 
     def gen_multi_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage, PILImage]:
         font_texts: List[FontText] = [it.sample() for it in self.corpus]
@@ -233,13 +242,18 @@ class Render:
                 pure_transformed_mask, BBox.from_size(pure_transformed_mask.size)
             )
 
-        img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
+        img, cropped_bg, aligned_pure_mask = self.paste_text_mask_on_bg(
+            bg, transformed_text_mask, pure_transformed_mask
+        )
 
-        return img, merged_text, cropped_bg, transformed_text_mask, pure_transformed_mask
+        return img, merged_text, cropped_bg, transformed_text_mask, aligned_pure_mask
 
     def paste_text_mask_on_bg(
-        self, bg: PILImage, transformed_text_mask: PILImage
-    ) -> Tuple[PILImage, PILImage]:
+        self,
+        bg: PILImage,
+        transformed_text_mask: PILImage,
+        pure_transformed_mask: PILImage = None,
+    ) -> Tuple[PILImage, PILImage, PILImage]:
         """
 
         Args:
@@ -263,23 +277,15 @@ class Render:
             _bg = bg.copy()
         else:
             _bg = bg
+
         bg.paste(transformed_text_mask, (0, 0), mask=transformed_text_mask)
-        return bg, _bg
 
-    def get_text_color(self, bg: PILImage, text: str, font: FreeTypeFont) -> FontColor:
-        # TODO: better get text color
-        # text_mask = self.draw_text_on_transparent_bg(text, font)
-        np_img = np.array(bg)
-        # mean = np.mean(np_img, axis=2)
-        mean = np.mean(np_img)
+        if pure_transformed_mask is not None:
+            aligned_pure_mask = pure_transformed_mask.copy()
+        else:
+            aligned_pure_mask = transformed_text_mask.copy()
 
-        alpha = np.random.randint(110, 255)
-        r = np.random.randint(0, int(mean * 0.7))
-        g = np.random.randint(0, int(mean * 0.7))
-        b = np.random.randint(0, int(mean * 0.7))
-        fg_text_color = (r, g, b, alpha)
-
-        return fg_text_color
+        return bg, _bg, aligned_pure_mask
 
     def _should_apply_layout(self) -> bool:
         return isinstance(self.corpus, list) and len(self.corpus) > 1
